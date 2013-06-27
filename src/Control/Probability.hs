@@ -1,6 +1,3 @@
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE StandaloneDeriving #-}
-
 {-| An efficient probability monad, taking inspiration from Oleg's /efficient
     Set monad/ at
 
