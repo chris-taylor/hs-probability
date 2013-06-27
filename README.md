@@ -2,7 +2,7 @@
 
  A reasonably efficient probability monad, based on Oleg's [efficient Set monad](http://www.haskell.org/pipermail/haskell-cafe/2013-April/107607.html).
 
-```haskell
+```
 >>> import Control.Probability
 >>> let die = uniform [1..6]
 Loading package array-0.4.0.0 ... linking ... done.
