@@ -1,0 +1,26 @@
+name:               Probability
+version:            0.0.1
+synopsis:           A reasonably efficient probability library
+homepage:           http://github.com
+category:           Mathematics
+author:             Chris Taylor
+license:            BSD3
+license-file:       LICENSE
+cabal-version:      >= 1.10
+build-type:         Simple
+category:           Mathematics
+
+Library
+    Default-Language:   Haskell2010
+    Default-Extensions: 
+    Other-Extensions:   GADTs, StandaloneDeriving
+    Hs-Source-Dirs:     src
+    GHC-Options:        -O2
+    GHC-Prof-Options:   -O2 -auto-all
+    Build-Depends:      base >= 2,
+                        containers
+    exposed-modules:    Control.Probability
+    other-modules:      Control.Probability.Internal
+                        Control.Probability.Dist
+                        Control.Probability.Ordering
+                        Control.Probability.PrettyPrint
