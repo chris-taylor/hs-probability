@@ -17,6 +17,8 @@ module Control.Probability
     , ProbMonad
     , runProb
     , runProb'
+    , runMostLikely
+    , runMostLikely'
     -- Create probability distributions
     , certainly
     , certainly'
@@ -30,6 +32,8 @@ module Control.Probability
     , expectation
     , variance
     , stdDev
+    , entropyBase
+    , entropy
     -- Query distributions
     , (??)
     -- Lift to ProbMonad
@@ -45,6 +49,8 @@ module Control.Probability
     -- Playground
     , printProb
     , printProb'
+    , printMostLikely
+    , printMostLikely'
     ) where
 
 import           Control.Probability.Internal
@@ -52,20 +58,21 @@ import           Control.Probability.Dist
 import           Control.Probability.Ordering
 import           Control.Probability.PrettyPrint
 
+-- |Print a probability distribution to the screen (requires a @Ord@ instance).
+printProb :: (Ord a, Show a) => ProbMonad a -> IO ()
+printProb = putStrLn . prettyPrint . runProb
 
+-- |Print a probability distribution to the screen.
+printProb' :: (Show a) => ProbMonad a -> IO ()
+printProb' = putStrLn . prettyPrint . runProb'
 
+-- |Print a probability distribution to the screen, ordered by
+--  likelihood (with the most probable elements first). Requires
+--  an @Ord@ instance.
+printMostLikely :: (Ord a, Show a) => ProbMonad a -> IO ()
+printMostLikely = putStrLn . prettyPrint . runMostLikely
 
-
-
-
-
-
-
--- Playground
-
-die :: (Ord a, Enum a, Num a) => a -> ProbMonad a
-die n = uniform [1..n]
-
-printProb x  = putStrLn . prettyPrint . runProb $ x
-
-printProb' x = putStrLn . prettyPrint . runMostLikely $ x
+-- |Print a probability distribution to the screen, ordered by
+--  likelihood (with the most probable elements first).
+printMostLikely' :: (Ord a, Show a) => ProbMonad a -> IO ()
+printMostLikely' = putStrLn . prettyPrint . runMostLikely'
