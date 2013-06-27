@@ -29,6 +29,9 @@ module Control.Probability
     , expectation
     , variance
     , stdDev
+    , mean
+    , median
+    , mode
     , entropyBase
     , entropy
     -- Query distributions

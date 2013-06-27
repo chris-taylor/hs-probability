@@ -4,6 +4,9 @@ module Control.Probability.Dist
     , expectation
     , variance
     , stdDev
+    , mean
+    , median
+    , mode
     , entropyBase
     , entropy
     , grouping
@@ -12,6 +15,7 @@ module Control.Probability.Dist
 
 import qualified Data.List as L
 import qualified Data.Map  as M
+import           Data.Ord (comparing)
 
 ------------------
 -- The Dist type
@@ -32,6 +36,10 @@ newtype Dist a = Dist { unD :: [(a,Prob)] } deriving Show
 expectation :: Dist Prob -> Prob
 expectation (Dist m) = L.foldl' (\b (a,p) -> p*a + b) 0 m
 
+-- |Alias for @expectastion@.
+mean :: Dist Prob -> Prob
+mean = expectation
+
 -- |Compute the variance of a probability distribution.
 variance :: Dist Prob -> Prob
 variance d@(Dist m) = L.foldl' (\b (a,p) -> b + p * (a-mean)^2) 0 m
@@ -41,6 +49,19 @@ variance d@(Dist m) = L.foldl' (\b (a,p) -> b + p * (a-mean)^2) 0 m
 -- |Compute the standard deviation of a probability distribution.
 stdDev :: Dist Prob -> Prob
 stdDev = sqrt . variance
+
+-- |Compute the median of a probability distribution.
+median :: Ord a => Dist a -> a
+median (Dist m) = go 0 $ L.sortBy (comparing fst) m
+    where
+        go _ []         = error "Probabilities do not sum to 1.0 -- Control.Probability.Dist.MEDIAN"
+        go p ((a,q):as) = if p + q >= 0.5
+            then a
+            else go (p+q) as
+
+-- |Compute the mode of a probability distribution.
+mode :: Dist a -> a
+mode (Dist m) = fst $ L.maximumBy (comparing snd) m
 
 -- |Compute the entropy of a distribution in a particular base. This only makes sens
 --  for distributions where equal values can be grouped.
