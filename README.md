@@ -1,6 +1,6 @@
 ## Probability
 
- A reasonably efficient probability monad, based on Oleg's [efficient Set monad](http://www.haskell.org/pipermail/haskell-cafe/2013-April/107607.html).
+ A reasonably efficient probability monad, based on Oleg's [efficient Set monad](http://www.haskell.org/pipermail/haskell-cafe/2013-April/107607.html) and Martin Erwig's [PFP Library](http://web.engr.oregonstate.edu/~erwig/pfp/).
 
     >>> import Control.Probability
 
