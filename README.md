@@ -58,15 +58,15 @@ Unlike the traditional probability monad based on lists, this library has no pro
 
 More complicated functions can be built using the `Monad ProbMonad` instance and `do` notation. For example, if we roll a dice until the running total is more than 10, what is the distribution of the number of rolls?
 
-    ```haskell
-    untilExceeds n = go 0 0
-    where
-        go len total = do
-            x <- die
-            if total >= n
-                then certainly len
-                else go (len+1) (total+x)
-    ```
+```haskell
+untilExceeds n = go 0 0
+where
+    go len total = do
+        x <- die
+        if total >= n
+            then certainly len
+            else go (len+1) (total+x)
+```
 
 and running it:
 
