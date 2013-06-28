@@ -55,3 +55,29 @@ Unlike the traditional probability monad based on lists, this library has no pro
     >>> printProb $ (>360) ?? sum (replicate 100 die)
     False  73.041%
      True  26.959%
+
+More complicated functions can be built using the `Monad ProbMonad` instance and `do` notation. For example, if we roll a dice until the running total is more than 10, what is the distribution of the number of rolls?
+
+    ```haskell
+    untilExceeds n = go 0 0
+    where
+        go len total = do
+            x <- die
+            if total >= n
+                then certainly len
+                else go (len+1) (total+x)
+    ```
+
+and running it:
+
+    >>> printProb $ untilExceeds 10
+     2  16.667%
+     3  45.833%
+     4  27.778%
+     5   8.102%
+     6   1.440%
+     7   0.167%
+     8   0.012%
+     9   0.001%
+    10   0.000%
+
