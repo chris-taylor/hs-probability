@@ -56,28 +56,21 @@ Unlike the traditional probability monad based on lists, this library has no pro
     False  73.041%
      True  26.959%
 
-More complicated functions can be built using the `Monad ProbMonad` instance and `do` notation. For example, if we roll a dice until the running total is more than 10, what is the distribution of the number of rolls?
+More complicated functions can be built using the `Monad ProbMonad` instance and `do` notation. For example, if keep rolling a six-sided dice, what is the probability that the total hits exactly 10?
 
 ```haskell
-untilExceeds n = go 0 0
-where
-    go len total = do
-        x <- die
-        if total >= n
-            then certainly len
-            else go (len+1) (total+x)
+untilEquals :: Int -> ProbMonad Bool
+untilEquals n = go 0
+    where
+        go total | total >  n = certainly False
+                 | total == n = certainly True
+                 | otherwise  = do x <- die
+                                   go (total + x)
 ```
 
 and running it:
 
-    >>> printProb $ untilExceeds 10
-     2  16.667%
-     3  45.833%
-     4  27.778%
-     5   8.102%
-     6   1.440%
-     7   0.167%
-     8   0.012%
-     9   0.001%
-    10   0.000%
+    >>> printProb $ untilEquals 10
+    False  71.071%
+     True  28.929%
 
