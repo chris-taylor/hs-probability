@@ -5,7 +5,7 @@ import           Text.Printf
 import           Control.Probability.Dist
 
 -- |Pretty printer for probability distributions
-prettyPrint :: Show a => Dist a -> String
+prettyPrint :: (PrintfArg p, Num p, Show a) => Dist p a -> String
 prettyPrint (Dist m) = L.intercalate "\n" $ toString len str prb
     where
         str = map (show.fst) m

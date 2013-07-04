@@ -10,6 +10,7 @@
 
 module Control.Probability
     ( Dist
+    , Distribution
     , ProbMonad
     , runProb
     , runProb'
@@ -33,27 +34,31 @@ module Control.Probability
     , printMostLikely'
     ) where
 
+import           Text.Printf (PrintfArg)
+
 import           Control.Probability.Internal
 import           Control.Probability.Dist
 import           Control.Probability.Ordering
 import           Control.Probability.PrettyPrint
 import           Control.Probability.Monad
 
+type Distribution = ProbMonad Double
+
 -- |Print a probability distribution to the screen (requires a @Ord@ instance).
-printProb :: (Ord a, Show a) => ProbMonad a -> IO ()
+printProb :: (PrintfArg p, Fractional p, Ord a, Show a) => ProbMonad p a -> IO ()
 printProb = putStrLn . prettyPrint . runProb
 
 -- |Print a probability distribution to the screen.
-printProb' :: (Show a) => ProbMonad a -> IO ()
+printProb' :: (PrintfArg p, Fractional p, Show a) => ProbMonad p a -> IO ()
 printProb' = putStrLn . prettyPrint . runProb'
 
 -- |Print a probability distribution to the screen, ordered by
 --  likelihood (with the most probable elements first). Requires
 --  an @Ord@ instance.
-printMostLikely :: (Ord a, Show a) => ProbMonad a -> IO ()
+printMostLikely :: (PrintfArg p, Fractional p, Ord p, Ord a, Show a) => ProbMonad p a -> IO ()
 printMostLikely = putStrLn . prettyPrint . runMostLikely
 
 -- |Print a probability distribution to the screen, ordered by
 --  likelihood (with the most probable elements first).
-printMostLikely' :: (Ord a, Show a) => ProbMonad a -> IO ()
+printMostLikely' :: (PrintfArg p, Fractional p, Ord p, Ord a, Show a) => ProbMonad p a -> IO ()
 printMostLikely' = putStrLn . prettyPrint . runMostLikely'

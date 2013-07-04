@@ -6,7 +6,7 @@
 
 A die is a uniform distribution on the numbers 1 ... 6
 
-    >>> let die = uniform [1..6]
+    >>> let die = uniform [1..6] :: Distribution Int
 
 The function `printProb` prints a representation of the distribution to the screen.
 
@@ -59,7 +59,7 @@ Unlike the traditional probability monad based on lists, this library has no pro
 More complicated functions can be built using the `Monad ProbMonad` instance and `do` notation. For example, if keep rolling a six-sided dice, what is the probability that the total hits exactly 10?
 
 ```haskell
-untilEquals :: Int -> ProbMonad Bool
+untilEquals :: Int -> Distribution Bool
 untilEquals n = go 0
     where
         go total | total >  n = certainly False

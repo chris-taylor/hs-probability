@@ -1,5 +1,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module Control.Probability.Internal
     ( ProbMonad(..)
@@ -29,9 +31,9 @@ import           Control.Probability.Monad
 ----------------------------------------------------------
 
 -- |The probability monad type. The two constructors are for ordered and non-ordered types.
-data ProbMonad a where
-    POrd :: Ord a => Map a Prob -> ProbMonad a
-    PAny ::          [(a,Prob)] -> ProbMonad a
+data ProbMonad p a where
+    POrd :: Ord a => Map a p -> ProbMonad p a
+    PAny ::          [(a,p)] -> ProbMonad p a
 
 
 
@@ -39,24 +41,24 @@ data ProbMonad a where
 -- Instances
 ----------------------------------------------------------
 
-deriving instance Show a => Show (ProbMonad a)
+deriving instance (Show p, Show a) => Show (ProbMonad p a)
 
-instance Functor ProbMonad where
+instance Fractional p => Functor (ProbMonad p) where
     fmap = liftM
 
-instance Applicative ProbMonad where
+instance Fractional p => Applicative (ProbMonad p) where
     pure  = return
     (<*>) = ap
 
-instance Monad ProbMonad where
+instance Fractional p => Monad (ProbMonad p) where
     return  = certainly'
     m >>= f = collect . map (\(a,p) -> multProb p (f a)) $ toList m
 
-instance (Ord a, Monoid a) => Monoid (ProbMonad a) where
+instance (Fractional p, Ord a, Monoid a) => Monoid (ProbMonad p a) where
     mempty  = certainly mempty
     mappend = liftP2 mappend
 
-instance (Ord a, Num a) => Num (ProbMonad a) where
+instance (Fractional p, Ord a, Num a) => Num (ProbMonad p a) where
     (+) = liftP2 (+)
     (-) = liftP2 (-)
     (*) = liftP2 (*)
@@ -64,12 +66,12 @@ instance (Ord a, Num a) => Num (ProbMonad a) where
     abs         = liftP abs
     signum      = liftP signum
 
-instance (Ord a, Fractional a) => Fractional (ProbMonad a) where
+instance (Fractional p, Ord a, Fractional a) => Fractional (ProbMonad p a) where
     (/)          = liftP2 (/)
     recip        = liftP  recip
     fromRational = certainly . fromRational
 
-instance (Ord a, Floating a) => Floating (ProbMonad a) where
+instance (Fractional p, Ord a, Floating a) => Floating (ProbMonad p a) where
     pi      = certainly pi
     exp     = liftP exp
     sqrt    = liftP sqrt
@@ -89,20 +91,20 @@ instance (Ord a, Floating a) => Floating (ProbMonad a) where
     atanh   = liftP atanh
     acosh   = liftP acosh
 
-instance MonadProb ProbMonad where
+instance (Fractional p) => MonadProb p ProbMonad where
     fromFreqs  = POrd . M.fromListWith (+)
     fromFreqs' = PAny
 
 
-multProb :: Prob -> ProbMonad a -> ProbMonad a
+multProb :: (Fractional p) => p -> ProbMonad p a -> ProbMonad p a
 multProb p (POrd x) = POrd $ M.map (*p) x
-multProb p (PAny x) = PAny $ map (\(a,q) -> (a,p*q)) x
+multProb p (PAny x) = PAny $ map (\(a, q) -> (a, p * q)) x
 
-toList :: ProbMonad a -> [(a,Prob)]
+toList :: ProbMonad p a -> [(a,p)]
 toList (POrd x) = M.toList x
 toList (PAny x) = x
 
-collect :: [ProbMonad a] -> ProbMonad a
+collect :: (Fractional p) => [ProbMonad p a] -> ProbMonad p a
 collect [ ]        = PAny []
 collect [x]        = x
 collect (POrd x:t) = case collect t of
@@ -119,38 +121,38 @@ collect (PAny x:t) = case collect t of
 ----------------------------------------------------------
 
 -- |Convert a @ProbMonad a@ object into a probability distribution.
-runProb :: Ord a => ProbMonad a -> Dist a
+runProb :: (Fractional p, Ord a) => ProbMonad p a -> Dist p a
 runProb (POrd x) = Dist (M.toList x)
 runProb (PAny x) = Dist . grouping $ x
 
 -- |Convert a @ProbMonad a@ object into a probability distribution, when there is
 --  no @Ord@ instance for @a@.
-runProb' :: ProbMonad a -> Dist a
+runProb' :: ProbMonad p a -> Dist p a
 runProb' (POrd x) = Dist (M.toList x)
 runProb' (PAny x) = Dist (x)
 
 -- |Convert a @ProbMonad a@ object into a probability distribution, ordering by
 --  the most likely results. Must have an @Ord a@ instance.
-runMostLikely :: Ord a => ProbMonad a -> Dist a
+runMostLikely :: (Fractional p, Ord p, Ord a) => ProbMonad p a -> Dist p a
 runMostLikely (POrd x) = Dist . mostLikely . M.toList $ x
 runMostLikely (PAny x) = Dist . mostLikely . grouping $ x
 
 -- |Convert a @ProbMonad a@ object into a probability distribution, ordering by
 --  the most likely results.
-runMostLikely' :: ProbMonad a -> Dist a
+runMostLikely' :: (Fractional p, Ord p) => ProbMonad p a -> Dist p a
 runMostLikely' (POrd x) = Dist . mostLikely $ M.toList x
 runMostLikely' (PAny x) = Dist . mostLikely $ x
 
-mostLikely :: [(a,Prob)] -> [(a,Prob)]
+mostLikely :: (Fractional p, Ord p) => [(a,p)] -> [(a,p)]
 mostLikely = L.sortBy . comparing $ negate . snd
 
 -- |Normalize a @ProbMonad a@ object.
-norm :: Ord a => ProbMonad a -> ProbMonad a
+norm :: (Fractional p, Ord a) => ProbMonad p a -> ProbMonad p a
 norm (POrd x) = POrd x
 norm (PAny x) = POrd (M.fromListWith (+) x)
 
 -- |Select a value from a probability distribution.
-selectP :: ProbMonad a -> Prob -> a
+selectP :: (Fractional p, Ord p) => ProbMonad p a -> p -> a
 selectP d p = go 0 (toList d)
     where
         go q ((a,r):as) = if q + r > p
