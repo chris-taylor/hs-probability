@@ -18,9 +18,15 @@ Library
     GHC-Options:        -O2
     GHC-Prof-Options:   -O2 -auto-all
     Build-Depends:      base >= 2,
-                        containers
+                        containers,
+                        heap,
+                        random,
+                        MonadRandom
     exposed-modules:    Control.Probability
-    other-modules:      Control.Probability.Internal
+                        Control.Probability.Internal
+                        Control.Probability.Monad
                         Control.Probability.Dist
+                        Control.Probability.Tree
                         Control.Probability.Ordering
                         Control.Probability.PrettyPrint
+                        Control.Probability.Random

@@ -16,6 +16,7 @@ module Control.Probability.Dist
 import qualified Data.List as L
 import qualified Data.Map  as M
 import           Data.Ord (comparing)
+--import           GHC.Float (float2Double)
 
 ------------------
 -- The Dist type
@@ -82,3 +83,20 @@ entropy = entropyBase (exp 1)
 grouping :: Ord a => [(a,Prob)] -> [(a,Prob)]
 grouping = M.toList . M.fromListWith (+)
 
+
+
+-- Class for computing expectations --
+
+--class ToFloat a where
+--    toFloat :: a -> Double
+
+--instance ToFloat Integer where
+--    toFloat = fromInteger
+
+--instance ToFloat Int where
+--    toFloat = fromIntegral
+
+--instance ToFloat Float where
+--    toFloat = float2Double
+
+--instance 

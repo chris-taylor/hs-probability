@@ -9,22 +9,12 @@
 -}
 
 module Control.Probability
-    ( Prob
-    , Dist
+    ( Dist
     , ProbMonad
     , runProb
     , runProb'
     , runMostLikely
     , runMostLikely'
-    -- Create probability distributions
-    , certainly
-    , certainly'
-    , uniform
-    , uniform'
-    , bernoulli
-    , bernoulli'
-    , fromFreqs
-    , fromFreqs'
     -- Compute statistics
     , expectation
     , variance
@@ -34,18 +24,8 @@ module Control.Probability
     , mode
     , entropyBase
     , entropy
-    -- Query distributions
-    , (??)
-    -- Lift to ProbMonad
-    , liftP
-    , liftP2
-    , liftP3
-    -- Ordering
-    , probLT
-    , probLE
-    , probGT
-    , probGE
-    , probEQ
+    , module Control.Probability.Monad
+    , module Control.Probability.Ordering
     -- Playground
     , printProb
     , printProb'
@@ -57,6 +37,7 @@ import           Control.Probability.Internal
 import           Control.Probability.Dist
 import           Control.Probability.Ordering
 import           Control.Probability.PrettyPrint
+import           Control.Probability.Monad
 
 -- |Print a probability distribution to the screen (requires a @Ord@ instance).
 printProb :: (Ord a, Show a) => ProbMonad a -> IO ()
