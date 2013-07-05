@@ -25,8 +25,10 @@ module Control.Probability
     , mode
     , entropyBase
     , entropy
+    -- Modules
     , module Control.Probability.Monad
     , module Control.Probability.Ordering
+    , module Control.Probability.PrettyPrint
     -- Playground
     , printProb
     , printProb'
@@ -45,20 +47,20 @@ import           Control.Probability.Monad
 type Distribution = ProbMonad Double
 
 -- |Print a probability distribution to the screen (requires a @Ord@ instance).
-printProb :: (PrintfArg p, Fractional p, Ord a, Show a) => ProbMonad p a -> IO ()
-printProb = putStrLn . prettyPrint . runProb
+printProb :: (ShowProb p, Fractional p, Ord a, Show a) => ProbMonad p a -> IO ()
+printProb = putStrLn . prettyPrintGeneric . runProb
 
 -- |Print a probability distribution to the screen.
-printProb' :: (PrintfArg p, Fractional p, Show a) => ProbMonad p a -> IO ()
-printProb' = putStrLn . prettyPrint . runProb'
+printProb' :: (ShowProb p, Fractional p, Show a) => ProbMonad p a -> IO ()
+printProb' = putStrLn . prettyPrintGeneric . runProb'
 
 -- |Print a probability distribution to the screen, ordered by
 --  likelihood (with the most probable elements first). Requires
 --  an @Ord@ instance.
-printMostLikely :: (PrintfArg p, Fractional p, Ord p, Ord a, Show a) => ProbMonad p a -> IO ()
-printMostLikely = putStrLn . prettyPrint . runMostLikely
+printMostLikely :: (ShowProb p, Fractional p, Ord p, Ord a, Show a) => ProbMonad p a -> IO ()
+printMostLikely = putStrLn . prettyPrintGeneric . runMostLikely
 
 -- |Print a probability distribution to the screen, ordered by
 --  likelihood (with the most probable elements first).
-printMostLikely' :: (PrintfArg p, Fractional p, Ord p, Ord a, Show a) => ProbMonad p a -> IO ()
-printMostLikely' = putStrLn . prettyPrint . runMostLikely'
+printMostLikely' :: (ShowProb p, Fractional p, Ord p, Ord a, Show a) => ProbMonad p a -> IO ()
+printMostLikely' = putStrLn . prettyPrintGeneric . runMostLikely'
