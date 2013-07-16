@@ -26,6 +26,8 @@ module Control.Probability
     , entropyBase
     , entropy
     -- Modules
+    , module Control.Monad
+    , module Control.Applicative
     , module Control.Probability.MonadBayes
     , module Control.Probability.Ordering
     , module Control.Probability.PrettyPrint
@@ -36,6 +38,8 @@ module Control.Probability
     , printMostLikely'
     ) where
 
+import           Control.Monad
+import           Control.Applicative
 import           Text.Printf (PrintfArg)
 
 import           Control.Probability.Types
