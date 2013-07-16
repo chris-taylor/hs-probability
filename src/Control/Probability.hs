@@ -11,7 +11,7 @@
 module Control.Probability
     ( Dist
     , Distribution
-    , ProbMonad
+    , Bayes
     , runProb
     , runProb'
     , runMostLikely
@@ -26,7 +26,7 @@ module Control.Probability
     , entropyBase
     , entropy
     -- Modules
-    , module Control.Probability.Monad
+    , module Control.Probability.MonadBayes
     , module Control.Probability.Ordering
     , module Control.Probability.PrettyPrint
     -- Playground
@@ -38,29 +38,30 @@ module Control.Probability
 
 import           Text.Printf (PrintfArg)
 
-import           Control.Probability.Internal
+import           Control.Probability.Types
+import           Control.Probability.Bayes
 import           Control.Probability.Dist
 import           Control.Probability.Ordering
 import           Control.Probability.PrettyPrint
-import           Control.Probability.Monad
+import           Control.Probability.MonadBayes
 
-type Distribution = ProbMonad Double
+type Distribution = Bayes Double
 
 -- |Print a probability distribution to the screen (requires a @Ord@ instance).
-printProb :: (ShowProb p, Fractional p, Ord a, Show a) => ProbMonad p a -> IO ()
+printProb :: (Probability p, Ord a, Show a) => Bayes p a -> IO ()
 printProb = putStrLn . prettyPrintGeneric . runProb
 
 -- |Print a probability distribution to the screen.
-printProb' :: (ShowProb p, Fractional p, Show a) => ProbMonad p a -> IO ()
+printProb' :: (Probability p, Show a) => Bayes p a -> IO ()
 printProb' = putStrLn . prettyPrintGeneric . runProb'
 
 -- |Print a probability distribution to the screen, ordered by
 --  likelihood (with the most probable elements first). Requires
 --  an @Ord@ instance.
-printMostLikely :: (ShowProb p, Fractional p, Ord p, Ord a, Show a) => ProbMonad p a -> IO ()
+printMostLikely :: (Probability p, Ord a, Show a) => Bayes p a -> IO ()
 printMostLikely = putStrLn . prettyPrintGeneric . runMostLikely
 
 -- |Print a probability distribution to the screen, ordered by
 --  likelihood (with the most probable elements first).
-printMostLikely' :: (ShowProb p, Fractional p, Ord p, Ord a, Show a) => ProbMonad p a -> IO ()
+printMostLikely' :: (Probability p, Ord a, Show a) => Bayes p a -> IO ()
 printMostLikely' = putStrLn . prettyPrintGeneric . runMostLikely'

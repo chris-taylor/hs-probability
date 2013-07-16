@@ -29,40 +29,7 @@ module Control.Probability.PrettyPrint
     ) where
 
 import qualified Data.List  as L
-import qualified Data.Ratio as R
-import           Text.Printf (printf)
-
-import           Control.Probability.Dist
-
--- |Class for displaying probabilities. We don't want to use the 'Show' instance
---  as it has some unappealing properties (e.g. it always displays floats to full
---  precision, and rationals are displayed as @"2 % 3"@ rather than @"2/3"@).
-class ShowProb p where
-    disp :: p -> String
-
-instance ShowProb Double where
-    disp = showDoublePercent
-
-instance ShowProb Float where
-    disp = showFloatPercent
-
-instance (Integral a, Show a) => ShowProb (R.Ratio a) where
-    disp = showRational
-
-showRational :: (Integral a, Show a) => R.Ratio a -> String
-showRational r = show (R.numerator r) ++ "/" ++ show (R.denominator r)
-
-showDouble :: Double -> String
-showDouble = printf "%6.4f"
-
-showDoublePercent :: Double -> String
-showDoublePercent = printf "%6.3f%%" . (*100)
-
-showFloat :: Float -> String
-showFloat = printf "%6.4f"
-
-showFloatPercent :: Float -> String
-showFloatPercent = printf "%6.3f%%" . (*100)
+import           Control.Probability.Types
 
 -- |Generic pretty printer for probability distributions. Each outcome is
 --  displayed on a separate line, along with its corresponding probability.

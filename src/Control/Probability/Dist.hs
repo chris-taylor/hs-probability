@@ -12,8 +12,7 @@
 --  result of the probabilistic calculation into a 'Dist' in order to query its
 --  expectation, variance etc.
 module Control.Probability.Dist
-    ( Dist(..)
-    , expectation
+    ( expectation
     , variance
     , stdDev
     , mean
@@ -26,39 +25,31 @@ module Control.Probability.Dist
     where
 
 import qualified Data.List as L
-import qualified Data.Map  as M
 import           Data.Ord (comparing)
 import           GHC.Float (float2Double, double2Float)
 
------------------------------------------------------------------
--- The Dist type
------------------------------------------------------------------
-
--- |Probability distributions are just a wrapper around a list, pairing values
---  with probabilities. 
-newtype Dist p a = Dist { unD :: [(a,p)] } deriving Show
-
+import           Control.Probability.Types
 
 -- |Compute the expectation of a probability distribution.
-expectation :: (Fractional p, Cast a p) => Dist p a -> p
+expectation :: (Probability p, Cast a p) => Dist p a -> p
 expectation (Dist m) = sum $ map (\(a,p) -> cast a * p) m
 
 -- |Alias for @expectastion@.
-mean :: (Fractional p, Cast a p) => Dist p a -> p
+mean :: (Probability p, Cast a p) => Dist p a -> p
 mean = expectation
 
 -- |Compute the variance of a probability distribution.
-variance :: (Fractional p, Cast a p) => Dist p a -> p
+variance :: (Probability p, Cast a p) => Dist p a -> p
 variance d@(Dist m) = L.foldl' (\b (a,p) -> b + p * (cast a - mean)^2) 0 m
     where
         mean = expectation d
 
 -- |Compute the standard deviation of a probability distribution.
-stdDev :: (Floating p, Cast a p) => Dist p a -> p
+stdDev :: (Probability p, Floating p, Cast a p) => Dist p a -> p
 stdDev = sqrt . variance
 
 -- |Compute the median of a probability distribution.
-median :: (Fractional p, Ord p, Ord a) => Dist p a -> a
+median :: (Probability p, Ord a) => Dist p a -> a
 median (Dist m) = go 0 $ L.sortBy (comparing fst) m
     where
         go _ []         = error "Probabilities do not sum to 1.0 -- Control.Probability.Dist.MEDIAN"
@@ -67,12 +58,12 @@ median (Dist m) = go 0 $ L.sortBy (comparing fst) m
             else go (p+q) as
 
 -- |Compute the mode of a probability distribution.
-mode :: Ord p => Dist p a -> a
+mode :: Probability p => Dist p a -> a
 mode (Dist m) = fst $ L.maximumBy (comparing snd) m
 
 -- |Compute the entropy of a distribution in a particular base. This only makes sens
 --  for distributions where equal values can be grouped.
-entropyBase :: (Floating p, Eq p, Ord a) => p -> Dist p a -> p
+entropyBase :: (Probability p, Floating p, Ord a) => p -> Dist p a -> p
 entropyBase k = negate . sum . map f . map snd . grouping . unD
     where
         f 0 = 0
@@ -81,14 +72,8 @@ entropyBase k = negate . sum . map f . map snd . grouping . unD
 -- |Compute the entropy of a probability distribution. This only makes sense for
 --  distributions where equal values can be grouped. This computes the entropy in *nats* --
 --  for more general units, see @entropyBase@.
-entropy :: (Floating p, Eq p, Ord a) => Dist p a -> p
+entropy :: (Probability p, Floating p, Ord a) => Dist p a -> p
 entropy = entropyBase (exp 1)
-
--- Utility function to group equal elements in a list, by converting the list
--- to a @Map@ and back.
-grouping :: (Fractional p, Ord a) => [(a,p)] -> [(a,p)]
-grouping = M.toList . M.fromListWith (+)
-
 
 
 -- Class for computing expectations --
@@ -113,19 +98,3 @@ instance Cast Float    Float     where cast = id
 instance Cast Int      Float     where cast = fromIntegral
 instance Cast Integer  Float     where cast = fromIntegral
 instance Cast Rational Float     where cast = fromRational
-
-
-
---class ToFloat a where
---    toFloat :: a -> Double
-
---instance ToFloat Integer where
---    toFloat = fromInteger
-
---instance ToFloat Int where
---    toFloat = fromIntegral
-
---instance ToFloat Float where
---    toFloat = float2Double
-
---instance 

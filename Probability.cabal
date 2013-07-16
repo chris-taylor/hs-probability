@@ -1,5 +1,5 @@
 name:               Probability
-version:            0.0.2
+version:            0.1.0
 synopsis:           A reasonably efficient probability library
 homepage:           http://github.com
 category:           Mathematics
@@ -23,10 +23,14 @@ Library
                         random,
                         MonadRandom
     exposed-modules:    Control.Probability
-                        Control.Probability.Internal
-                        Control.Probability.Monad
+                        Control.Probability.Types
+                    --  Control.Probability.Internal
+                    --  Control.Probability.Monad
+                        Control.Probability.MonadBayes
+                        Control.Probability.Bayes
                         Control.Probability.Dist
                         Control.Probability.Tree
                         Control.Probability.Ordering
                         Control.Probability.PrettyPrint
-                        Control.Probability.Random
+                    --  Control.Probability.Random
+                        Control.Probability.MonteCarlo
