@@ -44,9 +44,10 @@ fromResultList' = fromResultListGeneric id
 type ListTransformer a p = [(a,p)] -> [(a,p)]
 
 fromResultListGeneric :: (Probability p) => ListTransformer a p -> [Maybe a] -> Dist p a
-fromResultListGeneric collect xs = Dist . collect . map (,p) . Maybe.catMaybes $ xs
+fromResultListGeneric collect xs = Dist . collect $ map (,p) ok
     where
-        p = 1.0 / fromIntegral (length xs)
+        ok = Maybe.catMaybes xs
+        p  = 1.0 / fromIntegral (length ok)
 
 -----------------------------------------------------------------
 -- ShowProb
