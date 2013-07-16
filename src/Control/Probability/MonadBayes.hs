@@ -9,6 +9,8 @@
 
 module Control.Probability.MonadBayes
     ( MonadBayes(..)
+    , returning
+    , returning'
     , liftP
     , liftP2
     , liftP3
@@ -67,7 +69,15 @@ class (Fractional p, Monad (m p)) => MonadBayes p m where
     choose' ::         p -> a -> a -> m p a
     choose' p a b = fromWeights' $ zip [a,b] [p,1-p]
 
+----------------------------------------------------------------
+-- Synonyms
+----------------------------------------------------------------
 
+returning :: (MonadBayes p m, Ord a) => a -> m p a
+returning = certainly
+
+returning' :: (MonadBayes p m) => a -> m p a
+returning' = certainly'
 
 ----------------------------------------------------------------
 -- Lift functions into distributions
