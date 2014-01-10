@@ -34,12 +34,12 @@ module Control.Probability.PrettyPrint
 
 import qualified Data.List  as L
 import           Control.Probability.Types
-import           Control.Probability.Bayes
+import           Control.Probability.Distribution
 
 -- |Generic pretty printer for probability distributions. Each outcome is
 --  displayed on a separate line, along with its corresponding probability.
-prettyPrintGeneric :: (Show a, ShowProb p) => Dist p a -> String
-prettyPrintGeneric (Dist m) = L.intercalate "\n" $ genStrings (zip vals probs)
+prettyPrintGeneric :: (Show a, ShowProb p) => [(a, p)] -> String
+prettyPrintGeneric m = L.intercalate "\n" $ genStrings (zip vals probs)
   where
     vals  = map (show . fst) m
     probs = map (disp . snd) m
@@ -49,20 +49,20 @@ prettyPrintGeneric (Dist m) = L.intercalate "\n" $ genStrings (zip vals probs)
     padTo n s  = replicate (n-m) ' ' ++ s where m = length s
 
 -- |Print a probability distribution to the screen (requires a @Ord@ instance).
-printProb :: (Probability p, Ord a, Show a) => Bayes p a -> IO ()
+printProb :: (Probability p, Ord a, Show a) => Distribution p a -> IO ()
 printProb = putStrLn . prettyPrintGeneric . runProb
 
 -- |Print a probability distribution to the screen.
-printProb' :: (Probability p, Show a) => Bayes p a -> IO ()
+printProb' :: (Probability p, Show a) => Distribution p a -> IO ()
 printProb' = putStrLn . prettyPrintGeneric . runProb'
 
 -- |Print a probability distribution to the screen, ordered by
 --  likelihood (with the most probable elements first). Requires
 --  an @Ord@ instance.
-printMostLikely :: (Probability p, Ord a, Show a) => Bayes p a -> IO ()
+printMostLikely :: (Probability p, Ord a, Show a) => Distribution p a -> IO ()
 printMostLikely = putStrLn . prettyPrintGeneric . runMostLikely
 
 -- |Print a probability distribution to the screen, ordered by
 --  likelihood (with the most probable elements first).
-printMostLikely' :: (Probability p, Ord a, Show a) => Bayes p a -> IO ()
+printMostLikely' :: (Probability p, Ord a, Show a) => Distribution p a -> IO ()
 printMostLikely' = putStrLn . prettyPrintGeneric . runMostLikely'

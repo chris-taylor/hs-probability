@@ -4,7 +4,7 @@
 
 module Control.Probability.Types
     ( Probability
-    , Dist(..)
+    , ProbabilityList
     , ShowProb(..)
     , grouping
     , fromResultList
@@ -32,19 +32,19 @@ instance Probability Rational where
 -----------------------------------------------------------------
 
 -- |Probability distributions are just a wrapper around a list, pairing values
---  with probabilities. 
-newtype Dist p a = Dist { unD :: [(a,p)] } deriving Show
+--  with probabilities.
+type ProbabilityList p a = [(a,p)]
 
-fromResultList  :: (Probability p, Ord a) => [Maybe a] -> Dist p a
+fromResultList  :: (Probability p, Ord a) => [Maybe a] -> ProbabilityList p a
 fromResultList  = fromResultListGeneric grouping
 
-fromResultList' :: (Probability p)        => [Maybe a] -> Dist p a
+fromResultList' :: (Probability p)        => [Maybe a] -> ProbabilityList p a
 fromResultList' = fromResultListGeneric id
 
-type ListTransformer a p = [(a,p)] -> [(a,p)]
+type ListTransformer a p = ProbabilityList p a -> ProbabilityList p a
 
-fromResultListGeneric :: (Probability p) => ListTransformer a p -> [Maybe a] -> Dist p a
-fromResultListGeneric collect xs = Dist . collect $ map (,p) ok
+fromResultListGeneric :: (Probability p) => ListTransformer a p -> [Maybe a] -> ProbabilityList p a
+fromResultListGeneric collect xs = collect $ map (,p) ok
     where
         ok = Maybe.catMaybes xs
         p  = 1.0 / fromIntegral (length ok)
@@ -89,5 +89,5 @@ showFloatPercent = printf "%6.2f%%" . (*100)
 
 -- Utility function to group equal elements in a list, by converting the list
 -- to a @Map@ and back.
-grouping :: (Probability p, Ord a) => [(a,p)] -> [(a,p)]
+grouping :: (Probability p, Ord a) => ProbabilityList p a -> ProbabilityList p a
 grouping = M.toList . M.fromListWith (+)

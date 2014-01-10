@@ -11,7 +11,7 @@
 module Control.Probability
     ( Dist
     , Distribution
-    , Bayes
+    , Probability
     , runProb
     , runProb'
     , runMostLikely
@@ -34,7 +34,7 @@ module Control.Probability
     -- Modules
     , module Control.Monad
     , module Control.Applicative
-    , module Control.Probability.MonadProb
+    , module Control.Probability.Class
     , module Control.Probability.Ordering
     , module Control.Probability.PrettyPrint
     ) where
@@ -47,13 +47,13 @@ import qualified Data.Set                   as Set
 import           Text.Printf (PrintfArg)
 
 import           Control.Probability.Types
-import           Control.Probability.Bayes
-import           Control.Probability.Dist
+import           Control.Probability.Class
+import           Control.Probability.Distribution
+import           Control.Probability.Statistics
 import           Control.Probability.Ordering
 import           Control.Probability.PrettyPrint
-import           Control.Probability.MonadProb
 
-type Distribution = Bayes Double
+type Dist = Distribution Double
 
 ----------------------------------------------
 -- Functions to build distributions

@@ -7,7 +7,7 @@ module Control.Probability.Ordering
     )
     where
 
-import Control.Probability.MonadProb
+import Control.Probability.Class
 
 -- |Returns a distribution giving the probability that one random variable is less than another.
 probLT :: (Ord a, MonadProb p m) => m p a -> m p a -> m p Bool

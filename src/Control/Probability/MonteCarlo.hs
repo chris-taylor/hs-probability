@@ -17,9 +17,9 @@ import           Data.Monoid
 import           System.Random (StdGen)
 
 import           Control.Probability.Types
-import qualified Control.Probability.Bayes as Bayes
+import           Control.Probability.Class
+import qualified Control.Probability.Distribution as Distribution
 import           Control.Probability.Tree (mkTree, fetch)
-import           Control.Probability.MonadProb
 
 newtype MC p a = MC { getMC :: Random.Rand StdGen (Maybe a) }
 
@@ -113,15 +113,15 @@ instance (Random.Random p, Ord p, Floating p) => MonadProb p MC where
 
 
 -----------------------------------------------------------------
----- Convert to and from Bayes
+---- Convert to and from Distribution
 -----------------------------------------------------------------
 
----- |Sample from a 'MC' multiple times, creating an 'IO Dist'.
-sampleMC  :: (Probability p, Ord a) => Int -> MC p a -> IO (Dist p a)
+---- |Sample from a 'MC' multiple times, creating an 'IO ProbabilityList'.
+sampleMC  :: (Probability p, Ord a) => Int -> MC p a -> IO (ProbabilityList p a)
 sampleMC n mc  = fromResultList  <$> sample n mc
 
----- |Sample from a 'MC' multiple times, creating an 'IO Dist'.
-sampleMC' :: (Probability p) => Int -> MC p a -> IO (Dist p a)
+---- |Sample from a 'MC' multiple times, creating an 'IO ProbabilityList'.
+sampleMC' :: (Probability p) => Int -> MC p a -> IO (ProbabilityList p a)
 sampleMC' n mc = fromResultList' <$> sample n mc
 
 sample :: Probability p => Int -> MC p a -> IO [Maybe a]

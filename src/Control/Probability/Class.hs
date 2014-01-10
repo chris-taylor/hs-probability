@@ -6,8 +6,7 @@
 --  except that the unprimed version has an additional 'Ord' constraint (this
 --  is to allow for efficient implementations which rely on being able to sort
 --  the elements of the distribution.)
-
-module Control.Probability.MonadProb
+module Control.Probability.Class
     ( MonadProb(..)
     , returning
     , returning'
