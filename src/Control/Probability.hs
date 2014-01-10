@@ -44,7 +44,6 @@ import           Control.Applicative
 import           Data.List (delete)
 import qualified Data.Map                   as Map
 import qualified Data.Set                   as Set
-import           Text.Printf (PrintfArg)
 
 import           Control.Probability.Types
 import           Control.Probability.Class
