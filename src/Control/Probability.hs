@@ -34,7 +34,7 @@ module Control.Probability
     -- Modules
     , module Control.Monad
     , module Control.Applicative
-    , module Control.Probability.MonadBayes
+    , module Control.Probability.MonadProb
     , module Control.Probability.Ordering
     , module Control.Probability.PrettyPrint
     ) where
@@ -51,7 +51,7 @@ import           Control.Probability.Bayes
 import           Control.Probability.Dist
 import           Control.Probability.Ordering
 import           Control.Probability.PrettyPrint
-import           Control.Probability.MonadBayes
+import           Control.Probability.MonadProb
 
 type Distribution = Bayes Double
 
@@ -59,13 +59,13 @@ type Distribution = Bayes Double
 -- Functions to build distributions
 ----------------------------------------------
 
-selectSet :: (MonadBayes p m, Ord a) => Set.Set a -> m p (a, Set.Set a)
+selectSet :: (MonadProb p m, Ord a) => Set.Set a -> m p (a, Set.Set a)
 selectSet xs | Set.null xs = error "Empty list!"
 selectSet xs = do
     x <- uniform $ Set.toList xs
     returning (x, Set.delete x xs)
 
-select :: (MonadBayes p m, Ord a) => [a] -> m p (a, [a])
+select :: (MonadProb p m, Ord a) => [a] -> m p (a, [a])
 select [] = error "Empty list!"
 select xs = do
     x <- uniform xs
@@ -77,7 +77,7 @@ unRLE = go . Map.toList
         go [] = []
         go ((x,n):xs) = replicate n x ++ go xs
 
-unorderedSampleWithReplacement :: (MonadBayes p m, Ord a) => Int -> [a] -> m p [a]
+unorderedSampleWithReplacement :: (MonadProb p m, Ord a) => Int -> [a] -> m p [a]
 unorderedSampleWithReplacement k set = liftP unRLE (go k)
     where
         go 0 = certainly Map.empty
@@ -86,7 +86,7 @@ unorderedSampleWithReplacement k set = liftP unRLE (go k)
             xs <- go (n - 1)
             returning (Map.insertWith (+) x 1 xs)
 
-unorderedSampleWithoutReplacement :: (MonadBayes p m, Ord a) => Int -> [a] -> m p [a]
+unorderedSampleWithoutReplacement :: (MonadProb p m, Ord a) => Int -> [a] -> m p [a]
 unorderedSampleWithoutReplacement k lst = liftP unRLE (go k lst)
     where
 
@@ -97,14 +97,14 @@ unorderedSampleWithoutReplacement k lst = liftP unRLE (go k lst)
             returning (Map.insertWith (+) x 1 xs)
 
 
-sampleWithReplacement :: (MonadBayes p m, Ord a) => Int -> [a] -> m p [a]
+sampleWithReplacement :: (MonadProb p m, Ord a) => Int -> [a] -> m p [a]
 sampleWithReplacement 0 set = certainly []
 sampleWithReplacement k set = do
     x  <- uniform set
     xs <- sampleWithReplacement (k-1) set
     returning (x:xs)
 
-sampleWithoutReplacement :: (MonadBayes p m, Ord a) => Int -> [a] -> m p [a]
+sampleWithoutReplacement :: (MonadProb p m, Ord a) => Int -> [a] -> m p [a]
 sampleWithoutReplacement 0 set = certainly []
 sampleWithoutReplacement k set = do
     (x, rest) <- select set
