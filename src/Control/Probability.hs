@@ -16,6 +16,12 @@ module Control.Probability
     , runProb'
     , runMostLikely
     , runMostLikely'
+    -- Build distributions
+    , select
+    , sampleWithReplacement
+    , sampleWithoutReplacement
+    , unorderedSampleWithReplacement
+    , unorderedSampleWithoutReplacement
     -- Compute statistics
     , expectation
     , variance
@@ -40,6 +46,9 @@ module Control.Probability
 
 import           Control.Monad
 import           Control.Applicative
+import           Data.List (delete)
+import qualified Data.Map                   as Map
+import qualified Data.Set                   as Set
 import           Text.Printf (PrintfArg)
 
 import           Control.Probability.Types
@@ -51,21 +60,58 @@ import           Control.Probability.MonadBayes
 
 type Distribution = Bayes Double
 
--- |Print a probability distribution to the screen (requires a @Ord@ instance).
-printProb :: (Probability p, Ord a, Show a) => Bayes p a -> IO ()
-printProb = putStrLn . prettyPrintGeneric . runProb
+----------------------------------------------
+-- Functions to build distributions
+----------------------------------------------
 
--- |Print a probability distribution to the screen.
-printProb' :: (Probability p, Show a) => Bayes p a -> IO ()
-printProb' = putStrLn . prettyPrintGeneric . runProb'
+selectSet :: (MonadBayes p m, Ord a) => Set.Set a -> m p (a, Set.Set a)
+selectSet xs | Set.null xs = error "Empty list!"
+selectSet xs = do
+    x <- uniform $ Set.toList xs
+    returning (x, Set.delete x xs)
 
--- |Print a probability distribution to the screen, ordered by
---  likelihood (with the most probable elements first). Requires
---  an @Ord@ instance.
-printMostLikely :: (Probability p, Ord a, Show a) => Bayes p a -> IO ()
-printMostLikely = putStrLn . prettyPrintGeneric . runMostLikely
+select :: (MonadBayes p m, Ord a) => [a] -> m p (a, [a])
+select [] = error "Empty list!"
+select xs = do
+    x <- uniform xs
+    returning (x, delete x xs)
 
--- |Print a probability distribution to the screen, ordered by
---  likelihood (with the most probable elements first).
-printMostLikely' :: (Probability p, Ord a, Show a) => Bayes p a -> IO ()
-printMostLikely' = putStrLn . prettyPrintGeneric . runMostLikely'
+unRLE :: Map.Map a Int -> [a]
+unRLE = go . Map.toList
+    where
+        go [] = []
+        go ((x,n):xs) = replicate n x ++ go xs
+
+unorderedSampleWithReplacement :: (MonadBayes p m, Ord a) => Int -> [a] -> m p [a]
+unorderedSampleWithReplacement k set = liftP unRLE (go k)
+    where
+        go 0 = certainly Map.empty
+        go n = do
+            x  <- uniform set
+            xs <- go (n - 1)
+            returning (Map.insertWith (+) x 1 xs)
+
+unorderedSampleWithoutReplacement :: (MonadBayes p m, Ord a) => Int -> [a] -> m p [a]
+unorderedSampleWithoutReplacement k lst = liftP unRLE (go k lst)
+    where
+
+        go 0 set = certainly Map.empty
+        go n set = do
+            (x,rest) <- select set
+            xs <- go (n-1) rest
+            returning (Map.insertWith (+) x 1 xs)
+
+
+sampleWithReplacement :: (MonadBayes p m, Ord a) => Int -> [a] -> m p [a]
+sampleWithReplacement 0 set = certainly []
+sampleWithReplacement k set = do
+    x  <- uniform set
+    xs <- sampleWithReplacement (k-1) set
+    returning (x:xs)
+
+sampleWithoutReplacement :: (MonadBayes p m, Ord a) => Int -> [a] -> m p [a]
+sampleWithoutReplacement 0 set = certainly []
+sampleWithoutReplacement k set = do
+    (x, rest) <- select set
+    xs <- sampleWithoutReplacement (k-1) rest
+    returning (x:xs)

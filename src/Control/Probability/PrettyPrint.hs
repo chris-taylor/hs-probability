@@ -42,3 +42,22 @@ prettyPrintGeneric (Dist m) = L.intercalate "\n" $ genStrings (zip vals probs)
 
         genStrings = map (\(s,p) -> padTo len s ++ "  " ++ p)
         padTo n s  = replicate (n-m) ' ' ++ s where m = length s
+
+-- |Print a probability distribution to the screen (requires a @Ord@ instance).
+printProb :: (Probability p, Ord a, Show a) => Bayes p a -> IO ()
+printProb = putStrLn . prettyPrintGeneric . runProb
+
+-- |Print a probability distribution to the screen.
+printProb' :: (Probability p, Show a) => Bayes p a -> IO ()
+printProb' = putStrLn . prettyPrintGeneric . runProb'
+
+-- |Print a probability distribution to the screen, ordered by
+--  likelihood (with the most probable elements first). Requires
+--  an @Ord@ instance.
+printMostLikely :: (Probability p, Ord a, Show a) => Bayes p a -> IO ()
+printMostLikely = putStrLn . prettyPrintGeneric . runMostLikely
+
+-- |Print a probability distribution to the screen, ordered by
+--  likelihood (with the most probable elements first).
+printMostLikely' :: (Probability p, Ord a, Show a) => Bayes p a -> IO ()
+printMostLikely' = putStrLn . prettyPrintGeneric . runMostLikely'
