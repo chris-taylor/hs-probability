@@ -37,11 +37,6 @@ module Control.Probability
     , module Control.Probability.MonadBayes
     , module Control.Probability.Ordering
     , module Control.Probability.PrettyPrint
-    -- Playground
-    , printProb
-    , printProb'
-    , printMostLikely
-    , printMostLikely'
     ) where
 
 import           Control.Monad
