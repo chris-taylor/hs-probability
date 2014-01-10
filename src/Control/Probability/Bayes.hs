@@ -23,7 +23,7 @@ import           Control.Applicative
 
 import           Control.Probability.Types
 import           Control.Probability.Tree
-import           Control.Probability.MonadBayes
+import           Control.Probability.MonadProb
 
 ----------------------------------------------------------
 -- Types
@@ -98,7 +98,7 @@ instance (Probability p, Ord a, Floating a) => Floating (Bayes p a) where
     atanh   = liftP atanh
     acosh   = liftP acosh
 
-instance (Probability p) => MonadBayes p Bayes where
+instance (Probability p) => MonadProb p Bayes where
     fromWeights    = BayesOrd . M.fromListWith (+) . normalize
     fromWeights'   = BayesAny . normalize
 

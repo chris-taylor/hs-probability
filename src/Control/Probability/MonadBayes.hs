@@ -7,8 +7,8 @@
 --  is to allow for efficient implementations which rely on being able to sort
 --  the elements of the distribution.)
 
-module Control.Probability.MonadBayes
-    ( MonadBayes(..)
+module Control.Probability.MonadProb
+    ( MonadProb(..)
     , returning
     , returning'
     , liftP
@@ -19,7 +19,7 @@ module Control.Probability.MonadBayes
 
 -- |A monad representing probability distributions. Minimal complete implementation
 --  is 'fromWeights' and 'fromWeights\''.
-class (Fractional p, Monad (m p)) => MonadBayes p m where
+class (Fractional p, Monad (m p)) => MonadProb p m where
 
     -- |Take a (not necessarily normalized) list of results and probabilities
     --  and output a probability distribution. This function requires an 'Ord' constraint.
@@ -73,10 +73,10 @@ class (Fractional p, Monad (m p)) => MonadBayes p m where
 -- Synonyms
 ----------------------------------------------------------------
 
-returning :: (MonadBayes p m, Ord a) => a -> m p a
+returning :: (MonadProb p m, Ord a) => a -> m p a
 returning = certainly
 
-returning' :: (MonadBayes p m) => a -> m p a
+returning' :: (MonadProb p m) => a -> m p a
 returning' = certainly'
 
 ----------------------------------------------------------------
@@ -85,19 +85,19 @@ returning' = certainly'
 
 -- |Map a function over a distribution. This is equivalent to 'liftM' and 'fmap'
 --  for 'Monad' and 'Functor' instances, except that it uses the 'certainly'
---  method from the 'MonadBayes' class, and hence requires an 'Ord' instance in
+--  method from the 'MonadProb' class, and hence requires an 'Ord' instance in
 --  the return type of @f@.
-liftP  :: (Ord b, MonadBayes p m) => (a -> b) -> m p a -> m p b
+liftP  :: (Ord b, MonadProb p m) => (a -> b) -> m p a -> m p b
 liftP f p1 = p1 >>= certainly . f
 
 -- |Map a function of two arguments over a distribution.
-liftP2 :: (Ord c, MonadBayes p m) => (a -> b -> c) -> m p a -> m p b -> m p c
+liftP2 :: (Ord c, MonadProb p m) => (a -> b -> c) -> m p a -> m p b -> m p c
 liftP2 f p1 p2 = do x1 <- p1
                     x2 <- p2
                     certainly (f x1 x2)
 
 -- |Map a function of three arguments over a distribution.
-liftP3 :: (Ord d, MonadBayes p m) => (a -> b -> c -> d) -> m p a -> m p b -> m p c -> m p d
+liftP3 :: (Ord d, MonadProb p m) => (a -> b -> c -> d) -> m p a -> m p b -> m p c -> m p d
 liftP3 f p1 p2 p3 = do x1 <- p1
                        x2 <- p2
                        x3 <- p3
@@ -117,6 +117,6 @@ infixl 2 ??
 -- >>> printProb $ (> 6) ?? die + die
 -- False  41.667%
 --  True  58.333%
-(??) :: (MonadBayes p m) => (a -> Bool) -> m p a -> m p Bool
+(??) :: (MonadProb p m) => (a -> Bool) -> m p a -> m p Bool
 (??) = liftP
 

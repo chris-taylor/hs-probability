@@ -7,24 +7,24 @@ module Control.Probability.Ordering
     )
     where
 
-import Control.Probability.MonadBayes
+import Control.Probability.MonadProb
 
 -- |Returns a distribution giving the probability that one random variable is less than another.
-probLT :: (Ord a, MonadBayes p m) => m p a -> m p a -> m p Bool
+probLT :: (Ord a, MonadProb p m) => m p a -> m p a -> m p Bool
 probLT = liftP2 (<)
 
 -- |Returns a distribution giving the probability that one random variable is less than or equal to another.
-probLE :: (Ord a, MonadBayes p m) => m p a -> m p a -> m p Bool
+probLE :: (Ord a, MonadProb p m) => m p a -> m p a -> m p Bool
 probLE = liftP2 (<=)
 
 -- |Returns a distribution giving the probability that one random variable is greater than another.
-probGT :: (Ord a, MonadBayes p m) => m p a -> m p a -> m p Bool
+probGT :: (Ord a, MonadProb p m) => m p a -> m p a -> m p Bool
 probGT = liftP2 (>)
 
 -- |Returns a distribution giving the probability that one random variable is greater than or equal to another.
-probGE :: (Ord a, MonadBayes p m) => m p a -> m p a -> m p Bool
+probGE :: (Ord a, MonadProb p m) => m p a -> m p a -> m p Bool
 probGE = liftP2 (>=)
 
 -- |Returns a distribution giving the probability that one random variable is equal to another.
-probEQ :: (Ord a, MonadBayes p m) => m p a -> m p a -> m p Bool
+probEQ :: (Ord a, MonadProb p m) => m p a -> m p a -> m p Bool
 probEQ = liftP2 (==)

@@ -19,7 +19,7 @@ import           System.Random (StdGen)
 import           Control.Probability.Types
 import qualified Control.Probability.Bayes as Bayes
 import           Control.Probability.Tree (mkTree, fetch)
-import           Control.Probability.MonadBayes
+import           Control.Probability.MonadProb
 
 newtype MC p a = MC { getMC :: Random.Rand StdGen (Maybe a) }
 
@@ -94,7 +94,7 @@ instance (Ord a, Floating a) => Floating (MC p a) where
     atanh   = liftM atanh
     acosh   = liftM acosh
 
-instance (Random.Random p, Ord p, Floating p) => MonadBayes p MC where
+instance (Random.Random p, Ord p, Floating p) => MonadProb p MC where
 
     fromWeights = fromWeights'
     
