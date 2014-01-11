@@ -16,9 +16,11 @@ module Control.Probability.Class
     , (??)
     ) where
 
+import Control.Probability.Types (Probability)
+
 -- |A monad representing probability distributions. Minimal complete implementation
 --  is 'fromWeights' and 'fromWeights\''.
-class (Fractional p, Monad (m p)) => MonadProb p m where
+class (Probability p, Monad (m p)) => MonadProb p m where
 
     -- |Take a (not necessarily normalized) list of results and probabilities
     --  and output a probability distribution. This function requires an 'Ord' constraint.
@@ -68,8 +70,8 @@ class (Fractional p, Monad (m p)) => MonadProb p m where
     --  the first value with probability @p@ and the second with probability @1-p@. This
     --  does not require an 'Ord' constraint.
     choose' ::         p -> a -> a -> m p a
-    choose' 0 a _ = certainly a
-    choose' 1 _ b = certainly b
+    choose' 0 a _ = certainly' a
+    choose' 1 _ b = certainly' b
     choose' p a b = fromWeights' $ zip [a,b] [p,1-p]
 
 ----------------------------------------------------------------

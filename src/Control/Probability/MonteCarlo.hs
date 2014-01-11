@@ -94,7 +94,7 @@ instance (Ord a, Floating a) => Floating (MC p a) where
     atanh   = liftM atanh
     acosh   = liftM acosh
 
-instance (Random.Random p, Ord p, Floating p) => MonadProb p MC where
+instance (Random.Random p, Probability p, Floating p) => MonadProb p MC where
 
     fromWeights = fromWeights'
     
