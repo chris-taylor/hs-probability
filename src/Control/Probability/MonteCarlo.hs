@@ -2,12 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Control.Probability.MonteCarlo
-    --( MC
-    --, runMCIO
-    --, runMC
-    --)
-    where
+module Control.Probability.MonteCarlo where
 
 
 import qualified Control.Monad.Random as Random
@@ -21,94 +16,92 @@ import           Control.Probability.Class
 import qualified Control.Probability.Distribution as Distribution
 import           Control.Probability.Tree (mkTree, fetch)
 
-newtype MC p a = MC { getMC :: Random.Rand StdGen (Maybe a) }
+newtype MonteCarlo p a = MonteCarlo { getMonteCarlo :: Random.Rand StdGen (Maybe a) }
 
--- |Extract a value from a Monte Carlo distribution using a random number
---  generator initialised using the system clock.
-runMCIO :: MC p a -> IO (Maybe a)
-runMCIO = Random.evalRandIO . getMC
+-- | Extract a value from a Monte Carlo distribution using a random number
+-- generator initialised using the system clock.
+runMonteCarloIO :: MonteCarlo p a -> IO (Maybe a)
+runMonteCarloIO = Random.evalRandIO . getMonteCarlo
 
--- |Extract a value from a Monte Carlo distribution using a supplied random
---  number generator.
-runMC :: StdGen -> MC p a -> Maybe a
-runMC g t = Random.evalRand (getMC t) g
+-- | Extract a value from a Monte Carlo distribution using a supplied random
+-- number generator.
+runMonteCarlo :: StdGen -> MonteCarlo p a -> Maybe a
+runMonteCarlo g t = Random.evalRand (getMonteCarlo t) g
 
-instance Functor (MC p) where
-    fmap f = MC . fmap (fmap f) . getMC
+instance Functor (MonteCarlo p) where
+  fmap f = MonteCarlo . fmap (fmap f) . getMonteCarlo
 
-instance Monad (MC p) where
+instance Monad (MonteCarlo p) where
 
-    return = MC . return . return
+  return = MonteCarlo . return . Just
 
-    MC r >>= f = MC $ r >>= \ma ->
-        case ma of
-            Nothing -> return Nothing
-            Just a  -> getMC (f a)
+  mc >>= f = MonteCarlo $ do
+    ma <- getMonteCarlo mc
+    case ma of
+      Nothing -> return Nothing
+      Just a  -> getMonteCarlo (f a)
 
-instance Applicative (MC p) where
-    pure  = return
-    (<*>) = ap
+instance Applicative (MonteCarlo p) where
+  pure  = return
+  (<*>) = ap
 
--- |Monte Carlo generator that returns a value within a range.
-randomR :: Random.Random a => (a,a) -> MC p a
-randomR  = MC . fmap Just . Random.getRandomR
+instance Random.MonadRandom (MonteCarlo p) where
 
--- |Monte carlo generator that returns an infinite stream of values in a range.
-randomRs :: Random.Random a => (a,a) -> MC p [a]
-randomRs = MC . fmap Just . Random.getRandomRs
+  getRandom  = MonteCarlo (fmap Just Random.getRandom)
+  getRandoms = MonteCarlo (fmap Just Random.getRandoms)
 
-instance (Ord a, Monoid a) => Monoid (MC p a) where
-    mempty  = return mempty
-    mappend = liftM2 mappend
+  getRandomR  (a,b) = MonteCarlo (fmap Just $ Random.getRandomR  (a,b))
+  getRandomRs (a,b) = MonteCarlo (fmap Just $ Random.getRandomRs (a,b))
 
-instance (Ord a, Num a) => Num (MC p a) where
-    (+) = liftM2 (+)
-    (-) = liftM2 (-)
-    (*) = liftM2 (*)
-    fromInteger = return . fromInteger
-    abs         = liftM abs
-    signum      = liftM signum
+--instance (Ord a, Monoid a) => Monoid (MonteCarlo p a) where
+--    mempty  = return mempty
+--    mappend = liftM2 mappend
 
-instance (Ord a, Fractional a) => Fractional (MC p a) where
-    (/)          = liftM2 (/)
-    recip        = liftM  recip
-    fromRational = return . fromRational
+instance (Ord a, Num a) => Num (MonteCarlo p a) where
+  (+) = liftM2 (+)
+  (-) = liftM2 (-)
+  (*) = liftM2 (*)
+  fromInteger = return . fromInteger
+  abs         = liftM abs
+  signum      = liftM signum
 
-instance (Ord a, Floating a) => Floating (MC p a) where
-    pi      = return pi
-    exp     = liftM exp
-    sqrt    = liftM sqrt
-    log     = liftM log
-    (**)    = liftM2 (**)
-    logBase = liftM2 logBase
-    sin     = liftM sin
-    tan     = liftM tan
-    cos     = liftM cos
-    asin    = liftM asin
-    atan    = liftM atan
-    acos    = liftM acos
-    sinh    = liftM sinh
-    tanh    = liftM tanh
-    cosh    = liftM cosh
-    asinh   = liftM asinh
-    atanh   = liftM atanh
-    acosh   = liftM acosh
+instance (Ord a, Fractional a) => Fractional (MonteCarlo p a) where
+  (/)          = liftM2 (/)
+  recip        = liftM  recip
+  fromRational = return . fromRational
 
-instance (Random.Random p, Probability p, Floating p) => MonadProb p MC where
+instance (Ord a, Floating a) => Floating (MonteCarlo p a) where
+  pi      = return pi
+  exp     = liftM exp
+  sqrt    = liftM sqrt
+  log     = liftM log
+  (**)    = liftM2 (**)
+  logBase = liftM2 logBase
+  sin     = liftM sin
+  tan     = liftM tan
+  cos     = liftM cos
+  asin    = liftM asin
+  atan    = liftM atan
+  acos    = liftM acos
+  sinh    = liftM sinh
+  tanh    = liftM tanh
+  cosh    = liftM cosh
+  asinh   = liftM asinh
+  atanh   = liftM atanh
+  acosh   = liftM acosh
 
-    fromWeights = fromWeights'
-    
-    fromWeights' xs = do
-        let t = mkTree xs
-        p <- randomR (0,1)
-        return $ fetch p t
+instance (Random.Random p, Probability p, Floating p) => MonadProb p MonteCarlo where
 
-    condition test = if test
-        then return ()
-        else MC $ return Nothing
+  fromWeights = fromWeights'
+  
+  fromWeights' xs = do
+      let t = mkTree xs
+      p <- Random.getRandomR (0,1)
+      return $ fetch p t
 
-    certainly  = return
-    certainly' = return
+  condition test = if test
+      then return ()
+      else MonteCarlo $ return Nothing
 
 
 
@@ -116,14 +109,14 @@ instance (Random.Random p, Probability p, Floating p) => MonadProb p MC where
 ---- Convert to and from Distribution
 -----------------------------------------------------------------
 
----- |Sample from a 'MC' multiple times, creating an 'IO ProbabilityList'.
-sampleMC  :: (Probability p, Ord a) => Int -> MC p a -> IO (ProbabilityList p a)
-sampleMC n mc  = fromResultList  <$> sample n mc
+---- |Sample from a 'MonteCarlo' multiple times, creating an 'IO ProbabilityList'.
+sampleMonteCarlo  :: (Probability p, Ord a) => Int -> MonteCarlo p a -> IO (ProbabilityList p a)
+sampleMonteCarlo n mc  = fromResultList  <$> sample n mc
 
----- |Sample from a 'MC' multiple times, creating an 'IO ProbabilityList'.
-sampleMC' :: (Probability p) => Int -> MC p a -> IO (ProbabilityList p a)
-sampleMC' n mc = fromResultList' <$> sample n mc
+---- |Sample from a 'MonteCarlo' multiple times, creating an 'IO ProbabilityList'.
+sampleMonteCarlo' :: (Probability p) => Int -> MonteCarlo p a -> IO (ProbabilityList p a)
+sampleMonteCarlo' n mc = fromResultList' <$> sample n mc
 
-sample :: Probability p => Int -> MC p a -> IO [Maybe a]
-sample n mc = Random.evalRandIO $ sequence $ replicate n $ getMC mc
+sample :: Probability p => Int -> MonteCarlo p a -> IO [Maybe a]
+sample n mc = Random.evalRandIO $ sequence $ replicate n $ getMonteCarlo mc
 

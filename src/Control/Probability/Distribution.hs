@@ -4,13 +4,12 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module Control.Probability.Distribution
-    ( Distribution(..)
-    , runProb
-    , runProb'
-    , runMostLikely
-    , runMostLikely'
-    )
-    where
+  ( Distribution(..)
+  , runProb
+  , runProb'
+  , runMostLikely
+  , runMostLikely'
+  ) where
 
 import qualified Data.List as L
 import qualified Data.Map  as M
@@ -31,8 +30,8 @@ import           Control.Probability.Tree
 -- | Type for a probability distribution. The two constructors
 -- are for ordered and non-ordered types.
 data Distribution p a where
-    DistOrd :: (Probability p, Ord a) => Map (Maybe a) p -> Distribution p a
-    DistAny :: (Probability p)        => [(Maybe a, p)]  -> Distribution p a
+  DistOrd :: (Probability p, Ord a) => Map (Maybe a) p -> Distribution p a
+  DistAny :: (Probability p)        => [(Maybe a, p)]  -> Distribution p a
 
 zeroDist  :: (Probability p, Ord a) => Distribution p a
 zeroDist  = DistOrd (M.singleton Nothing 1.0)
@@ -47,61 +46,60 @@ zeroDist' = DistAny [(Nothing,1.0)]
 deriving instance (Show p, Show a) => Show (Distribution p a)
 
 instance Probability p => Functor (Distribution p) where
-    fmap = liftM
+  fmap = liftM
 
 instance Probability p => Applicative (Distribution p) where
-    pure  = return
-    (<*>) = ap
+  pure  = return
+  (<*>) = ap
 
 instance Probability p => Monad (Distribution p) where
-    return  = certainly'
+  return  = certainly'
 
-    m >>= f = collect [multProb p (go a) | (a,p) <- toList' m]
-        where
-            go = maybe zeroDist' f
+  m >>= f = collect [multProb p (go a) | (a,p) <- toList' m]
+   where go = maybe zeroDist' f
 
 instance (Probability p, Ord a, Monoid a) => Monoid (Distribution p a) where
-    mempty  = certainly mempty
-    mappend = liftP2 mappend
+  mempty  = certainly mempty
+  mappend = liftP2 mappend
 
 instance (Probability p, Ord a, Num a) => Num (Distribution p a) where
-    (+) = liftP2 (+)
-    (-) = liftP2 (-)
-    (*) = liftP2 (*)
-    fromInteger = certainly . fromInteger
-    abs         = liftP abs
-    signum      = liftP signum
+  (+) = liftP2 (+)
+  (-) = liftP2 (-)
+  (*) = liftP2 (*)
+  fromInteger = certainly . fromInteger
+  abs         = liftP abs
+  signum      = liftP signum
 
 instance (Probability p, Ord a, Fractional a) => Fractional (Distribution p a) where
-    (/)          = liftP2 (/)
-    recip        = liftP  recip
-    fromRational = certainly . fromRational
+  (/)          = liftP2 (/)
+  recip        = liftP  recip
+  fromRational = certainly . fromRational
 
 instance (Probability p, Ord a, Floating a) => Floating (Distribution p a) where
-    pi      = certainly pi
-    exp     = liftP exp
-    sqrt    = liftP sqrt
-    log     = liftP log
-    (**)    = liftP2 (**)
-    logBase = liftP2 logBase
-    sin     = liftP sin
-    tan     = liftP tan
-    cos     = liftP cos
-    asin    = liftP asin
-    atan    = liftP atan
-    acos    = liftP acos
-    sinh    = liftP sinh
-    tanh    = liftP tanh
-    cosh    = liftP cosh
-    asinh   = liftP asinh
-    atanh   = liftP atanh
-    acosh   = liftP acosh
+  pi      = certainly pi
+  exp     = liftP exp
+  sqrt    = liftP sqrt
+  log     = liftP log
+  (**)    = liftP2 (**)
+  logBase = liftP2 logBase
+  sin     = liftP sin
+  tan     = liftP tan
+  cos     = liftP cos
+  asin    = liftP asin
+  atan    = liftP atan
+  acos    = liftP acos
+  sinh    = liftP sinh
+  tanh    = liftP tanh
+  cosh    = liftP cosh
+  asinh   = liftP asinh
+  atanh   = liftP atanh
+  acosh   = liftP acosh
 
 instance (Probability p) => MonadProb p Distribution where
-    fromWeights    = DistOrd . M.fromListWith (+) . normalize
-    fromWeights'   = DistAny . normalize
+  fromWeights    = DistOrd . M.fromListWith (+) . normalize
+  fromWeights'   = DistAny . normalize
 
-    condition test = if test then certainly () else zeroDist
+  condition test = if test then certainly () else zeroDist
 
 multProb :: (Probability p) => p -> Distribution p a -> Distribution p a
 multProb p (DistOrd x) = DistOrd $ M.map (*p) x
@@ -133,23 +131,23 @@ collect (DistAny x:t) = case collect t of
 
 normalize :: (Probability p) => ProbabilityList p a -> [(Maybe a,p)]
 normalize xs = map (\(a,p) -> (Just a, p/total)) xs
-    where
-        total = sum (map snd xs)
+ where
+  total = sum (map snd xs)
 
 sumProbMaybe :: Probability p => [(Maybe a,p)] -> p
 sumProbMaybe = L.foldl' f 0
-    where
-        f acc (x,p) = case x of
-            Just _  -> acc + p
-            Nothing -> acc
+ where
+  f acc (x,p) = case x of
+    Just _  -> acc + p
+    Nothing -> acc
 
 bayes :: Probability p => [(Maybe a,p)] -> ProbabilityList p a
 bayes xs = foldr f [] xs
-    where
-        total       = sumProbMaybe xs
-        f (x,p) acc = case x of
-            Just a  -> (a,p/total) : acc
-            Nothing -> acc
+ where
+  total       = sumProbMaybe xs
+  f (x,p) acc = case x of
+    Just a  -> (a,p/total) : acc
+    Nothing -> acc
 
 
 ----------------------------------------------------------
@@ -177,18 +175,5 @@ runMostLikely' = reorder . bayes . toList'
 
 reorder :: (Probability p) => ProbabilityList p a -> ProbabilityList p a
 reorder = L.sortBy . comparing $ negate . snd
-
--- |Normalize a @Distribution a@ object.
---order :: (Probability p, Ord a) => Distribution p a -> Distribution p a
---order (DistOrd x) = DistOrd x
---order (DistAny x) = DistOrd (M.fromListWith (+) x)
-
--- |Select a value from a probability distribution.
---selectP :: (Probability p) => Distribution p a -> p -> a
---selectP d p = go 0 (toList d)
---    where
---        go q ((a,r):as) = if q + r > p
---            then a
---            else go (q + r) as
 
 

@@ -1,27 +1,23 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
 
--- |This modules contains the 'Dist' type which is a catch-all representation of
---  a probability distribution. We don't provide a 'Monad' instance as it would
---  be very inefficient, but we define functions like 'expectation' and 'variance'
---  on this type.
---
---  The general pattern is to work with a 'ProbMonad' or 'MonteCarlo' object for
---  all calculations, and call the appropriate 'runProb' method to convert the
---  result of the probabilistic calculation into a 'Dist' in order to query its
---  expectation, variance etc.
+-- | This module exports common statistics for the 'Distribution' type,
+-- such as mean, variance and standard deviation. In general if we have
+-- a @Distribution p a@ then @a@ can be any type that can be meaningully
+-- cast to type @p@.
 module Control.Probability.Statistics
-    ( expectation
-    , variance
-    , stdDev
-    , mean
-    , median
-    , mode
-    , entropyBase
-    , entropy
-    )
-    where
+  ( probability
+  , expectation
+  , variance
+  , stdDev
+  , mean
+  , median
+  , mode
+  , entropyBase
+  , entropy
+  ) where
 
 import qualified Data.List as L
 import           Data.Ord   (comparing)
@@ -30,13 +26,18 @@ import           GHC.Float  (float2Double, double2Float)
 import           Control.Probability.Types
 import           Control.Probability.Distribution
 
--- |Compute the expectation of a probability distribution.
+-- | Compute the probability of a 'True' result over a boolean probability
+-- distribution.
+probability :: (Probability p, Cast Bool p) => Distribution p Bool -> p
+probability = expectation
+
+-- | Compute the expectation of a probability distribution.
 expectation :: (Probability p, Cast a p) => Distribution p a -> p
 expectation = go . runProb
  where
   go = sum . map (\(a,p) -> cast a * p)
 
--- |Alias for 'expectation'.
+-- | Alias for 'expectation'.
 mean :: (Probability p, Cast a p) => Distribution p a -> p
 mean = expectation
 
@@ -90,18 +91,21 @@ entropy d = entropyBase (exp 1.0) d
 class Ord a => Cast a b where
     cast :: a -> b
 
+instance Cast Bool     Double    where cast x = if x then 1 else 0
 instance Cast Double   Double    where cast = id
 instance Cast Float    Double    where cast = float2Double
 instance Cast Int      Double    where cast = fromIntegral
 instance Cast Integer  Double    where cast = fromIntegral
 instance Cast Rational Double    where cast = fromRational
 
+instance Cast Bool     Rational  where cast x = if x then 1 else 0
 instance Cast Double   Rational  where cast = toRational
 instance Cast Float    Rational  where cast = toRational
 instance Cast Int      Rational  where cast = toRational
 instance Cast Integer  Rational  where cast = toRational
 instance Cast Rational Rational  where cast = id
 
+instance Cast Bool     Float     where cast x = if x then 1 else 0
 instance Cast Double   Float     where cast = double2Float
 instance Cast Float    Float     where cast = id
 instance Cast Int      Float     where cast = fromIntegral

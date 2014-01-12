@@ -1,11 +1,10 @@
 module Control.Probability.Ordering
-    ( probLT
-    , probLE
-    , probGT
-    , probGE
-    , probEQ
-    )
-    where
+  ( probLT
+  , probLE
+  , probGT
+  , probGE
+  , probEQ
+  ) where
 
 import Control.Probability.Class
 
