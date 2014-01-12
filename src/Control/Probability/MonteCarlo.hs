@@ -7,7 +7,7 @@ module Control.Probability.MonteCarlo where
 
 import qualified Control.Monad.Random as Random
 import           Control.Applicative
-import           Control.Monad (ap, liftM, liftM2)
+import           Control.Monad (ap, liftM, liftM2, replicateM)
 import           Data.Monoid
 import           System.Random (StdGen)
 
@@ -103,20 +103,30 @@ instance (Random.Random p, Probability p, Floating p) => MonadProb p MonteCarlo 
       then return ()
       else MonteCarlo $ return Nothing
 
+{-----------------------------------------------------------------
+  Sample from a Monte Carlo generator.
+-----------------------------------------------------------------}
 
+-- | Sample a 'MonteCarlo' generator multiple times from a supplied random number
+-- generator.
+sampleMonteCarlo :: (Probability p, Ord a) => StdGen -> Int -> MonteCarlo p a -> ProbabilityList p a
+sampleMonteCarlo g n mc  = fromResultList (sample g n mc)
 
------------------------------------------------------------------
----- Convert to and from Distribution
------------------------------------------------------------------
+-- | Sample a 'MonteCarlo' generator multiple times from a supplied random number generator.
+sampleMonteCarlo' :: (Probability p) => StdGen -> Int -> MonteCarlo p a -> ProbabilityList p a
+sampleMonteCarlo' g n mc = fromResultList' (sample g n mc)
 
----- |Sample from a 'MonteCarlo' multiple times, creating an 'IO ProbabilityList'.
-sampleMonteCarlo  :: (Probability p, Ord a) => Int -> MonteCarlo p a -> IO (ProbabilityList p a)
-sampleMonteCarlo n mc  = fromResultList  <$> sample n mc
+-- | Sample from a 'MonteCarlo' multiple times, creating an 'IO ProbabilityList'.
+sampleMonteCarloIO  :: (Probability p, Ord a) => Int -> MonteCarlo p a -> IO (ProbabilityList p a)
+sampleMonteCarloIO n mc  = fromResultList  <$> sampleIO n mc
 
----- |Sample from a 'MonteCarlo' multiple times, creating an 'IO ProbabilityList'.
-sampleMonteCarlo' :: (Probability p) => Int -> MonteCarlo p a -> IO (ProbabilityList p a)
-sampleMonteCarlo' n mc = fromResultList' <$> sample n mc
+-- | Sample from a 'MonteCarlo' multiple times, creating an 'IO ProbabilityList'.
+sampleMonteCarloIO' :: (Probability p) => Int -> MonteCarlo p a -> IO (ProbabilityList p a)
+sampleMonteCarloIO' n mc = fromResultList' <$> sampleIO n mc
 
-sample :: Probability p => Int -> MonteCarlo p a -> IO [Maybe a]
-sample n mc = Random.evalRandIO $ sequence $ replicate n $ getMonteCarlo mc
+sample :: Probability p => StdGen -> Int -> MonteCarlo p a -> [Maybe a]
+sample g n mc = Random.evalRand (replicateM n $ getMonteCarlo mc) g
+
+sampleIO :: Probability p => Int -> MonteCarlo p a -> IO [Maybe a]
+sampleIO n = Random.evalRandIO . replicateM n . getMonteCarlo
 
